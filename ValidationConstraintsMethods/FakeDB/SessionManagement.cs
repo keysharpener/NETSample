@@ -21,13 +21,13 @@ namespace ValidationConstraintsMethods.FakeDB
 
         private SessionManagement()
         {
-            _cachedAssets.Add(new AssetEditable { Id = 124, Name = "ACCOR" , HandlesQuotes = true, AssetStatus = new AssetStatus(), AssetType = new AssetType(), Code = "AC.PA"});
-            _cachedAssets.Add(new AssetEditable { Id = 295, Name = "TOTAL", HandlesQuotes = true, AssetStatus = new AssetStatus(), AssetType = new AssetType(), Code = "TO.PA" });
+            _cachedAssets.Add(new AssetEditable { Id = 124, Name = "ACCOR", HandlingQuotes = true, Status = new AssetStatus(), AssetType = new AssetType(), Code = "AC.PA" });
+            _cachedAssets.Add(new AssetEditable { Id = 295, Name = "TOTAL", HandlingQuotes = true, Status = new AssetStatus(), AssetType = new AssetType(), Code = "TO.PA" });
         }
 
-        public ValidationConstraint GetValidationConstraint(int validationConstraintId)
+        public ValidationConstraint GetValidationConstraint(string validationConstraintId)
         {
-            return _cachedValidationConstraints.FirstOrDefault(vc => vc.Id == validationConstraintId);
+            return _cachedValidationConstraints.FirstOrDefault(vc => vc.ToString() == validationConstraintId);
         }
 
         public IList<ValidationConstraint> GetAllValidationConstraints()
@@ -35,11 +35,15 @@ namespace ValidationConstraintsMethods.FakeDB
             return _cachedValidationConstraints;
         }
 
-        public IList<AssetEditable> GetAllAssets()
+        public IEnumerable<AssetEditable> GetAllAssets()
         {
             return _cachedAssets;
         }
 
+        public void ClearAllConstraints()
+        {
+            _cachedValidationConstraints.Clear();
+        }
 
         public IList<ValidationConstraint> GetValidationConstraintsByObject(string type)
         {
@@ -48,13 +52,14 @@ namespace ValidationConstraintsMethods.FakeDB
 
         public void Delete(ValidationConstraint validationConstraint)
         {
-            if (_cachedValidationConstraints.Contains(validationConstraint))
+            if (_cachedValidationConstraints.FirstOrDefault(vc => vc.Equals(validationConstraint)) != null)
                 _cachedValidationConstraints.Remove(validationConstraint);
+
         }
 
         public ValidationConstraint SaveOrUpdateInstance(ValidationConstraint validationConstraint)
         {
-            var oldItem = _cachedValidationConstraints.FirstOrDefault(vc => vc.Id == validationConstraint.Id);
+            var oldItem = _cachedValidationConstraints.FirstOrDefault(vc => vc.Equals(validationConstraint));
             if (oldItem == null)
                 _cachedValidationConstraints.Add(validationConstraint);
             else

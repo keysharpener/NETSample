@@ -24,7 +24,7 @@ namespace ValidationConstraintsMethods.WCFService
         }
 
 
-        public ValidationConstraint GetValidationConstraintById(int validationConstraintId)
+        public ValidationConstraint GetValidationConstraintById(string validationConstraintId)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace ValidationConstraintsMethods.WCFService
                     {
                         if (validationConstraint.RequiresDeletion && !validationConstraint.IsNew)
                         {
-                            SessionManagement.Db.Delete(validationConstraint);
+                            DeleteObject(validationConstraint);
                         }
                         else
                         {
@@ -100,7 +100,7 @@ namespace ValidationConstraintsMethods.WCFService
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception();
+                    throw;
                     //SessionManagement.Db.RollbackTrans((saveOrUpdateTransaction));
                     //throw new TechnicalException(ExceptionDictionary.The_constraint_could_not_be_saved_into_the_database, ex);
                 }
@@ -152,7 +152,7 @@ namespace ValidationConstraintsMethods.WCFService
                     Object secondArgument = null;
                     if (constraint.MainArgument != null)
                     {
-                        MethodInfo m = test.GetMethod("Parse", new Type[] { typeof(string) });
+                        MethodInfo m = test.GetMethod("Parse", new[] { typeof(string) });
                         if (m != null)
                         {
                             mainArgument = m.Invoke(null, new[] { constraint.MainArgument });
@@ -161,7 +161,7 @@ namespace ValidationConstraintsMethods.WCFService
                     }
                     if (constraint.SecondaryArgument != null && constraint.ConstraintType == trkValidationConstraintType.Between)
                     {
-                        MethodInfo m = test.GetMethod("Parse", new Type[] { typeof(string) });
+                        MethodInfo m = test.GetMethod("Parse", new[] { typeof(string) });
                         if (m != null)
                         {
                             secondArgument = m.Invoke(null, new[] { constraint.SecondaryArgument });
@@ -200,8 +200,8 @@ namespace ValidationConstraintsMethods.WCFService
         {
             message = string.Empty;
             StringBuilder sb = new StringBuilder();
-            var children = SessionManagement.Db.GetAllValidationConstraints().FirstOrDefault(c => c.ParentConstraint.Id == obj.Id);
-            if (children != null)
+            var children = SessionManagement.Db.GetAllValidationConstraints().Where(c => Equals(c.ParentConstraint, obj)).ToList();
+            if (children.Any())
                 sb.AppendLine(string.Format("The constraint {0} cannot be deleted because it is linked to child constraints", obj));
             message = sb.ToString();
             return string.IsNullOrEmpty(message);
@@ -215,7 +215,11 @@ namespace ValidationConstraintsMethods.WCFService
 
         protected /*override*/ void DeleteObject(ValidationConstraint obj)
         {
-            SessionManagement.Db.Delete(obj);
+            string message;
+            if (CanBeDeleted(obj, out message))
+                SessionManagement.Db.Delete(obj);
+            else
+                throw new Exception(message);
         }
 
         public void ValidateObject(IRepositoryWorkflowEntity record)

@@ -46,7 +46,7 @@ namespace Test
             if (result == null) Console.WriteLine("No validation constraints found in the database");
             else
             {
-                var secondRun = ValidationConstraintService.Instance.GetValidationConstraintById(result.Id);
+                var secondRun = ValidationConstraintService.Instance.GetValidationConstraintById(result.ToString());
                 Assert.IsNotNull(result);
                 Assert.IsNotNull(secondRun);
                 Assert.AreEqual(result, secondRun);
@@ -321,7 +321,11 @@ namespace Test
             savedItem.RequiresDeletion = true;
             constraintsToSave.Add(newConstraint);
             ValidationConstraintService.Instance.SaveOrUpdateList(constraintsToSave);
-            Assert.IsNull(ValidationConstraintService.Instance.GetValidationConstraintById(savedItem.Id));
+            var supposedToHaveBeenErased = ValidationConstraintService.Instance.GetValidationConstraintById(savedItem.ToString());
+            if (supposedToHaveBeenErased != null)
+            {
+                Assert.Fail(supposedToHaveBeenErased.ToString());
+            }
         }
 
 
@@ -344,12 +348,12 @@ namespace Test
             savedConstraint.ParentConstraint = savedConstraint;
             TrySaveAndFail(newConstraint);
 
-            //Finally delete the constraint that had to be saved.
-            savedConstraint.RequiresDeletion = true;
-            constraintsToSave.Add(newConstraint);
-            ValidationConstraintService.Instance.SaveOrUpdateList(constraintsToSave);
-            Assert.IsNull(ValidationConstraintService.Instance.GetValidationConstraintById(savedConstraint.Id));
-            constraintsToSave.Clear();
+            ////Finally delete the constraint that had to be saved.
+            //savedConstraint.RequiresDeletion = true;
+            //constraintsToSave.Add(newConstraint);
+            //ValidationConstraintService.Instance.SaveOrUpdateList(constraintsToSave);
+            //Assert.IsNull(ValidationConstraintService.Instance.GetValidationConstraintById(savedConstraint.ToString()));
+            //constraintsToSave.Clear();
         }
 
         [TestMethod]
@@ -596,7 +600,7 @@ namespace Test
                 ValidationConstraintService.Instance.SaveOrUpdateList(testConstraints);
                 //Should succeed
                 ValidationConstraintService.Instance.ValidateObject(accor);
-
+                 
 
                 var nullConstraint = new ValidationConstraint
                 {
@@ -627,6 +631,40 @@ namespace Test
 
         }
 
+        [TestMethod]
+        public void ValidationConstraints_ValidateDeepTree()
+        {
+            var asset = SessionManagement.Db.GetAllAssets().FirstOrDefault(a => a.Name == "ACCOR");
+            var firstConstraint = new ValidationConstraint
+            {
+                ConstraintType = trkValidationConstraintType.Equal,
+                ObjectType = _typeOfAssetEditable,
+                Property = "Name",
+                PropertyType = _typeOfString,
+                MainArgument = "ACCOR"
+            };
+
+            var secondConstraint = new ValidationConstraint
+            {
+                ConstraintType = trkValidationConstraintType.Equal,
+                ObjectType = _typeOfAssetEditable,
+                Property = "Id",
+                PropertyType = _typeOfInt,
+                ParentConstraint = firstConstraint,
+                MainArgument = "124"
+            };
+
+            var thirdConstraint = new ValidationConstraint
+            {
+                ConstraintType = trkValidationConstraintType.NotNull,
+                ObjectType = _typeOfAssetEditable,
+                Property = "Code",
+                ParentConstraint = secondConstraint,
+                PropertyType = _typeOfString,
+            };
+            ValidationConstraintService.Instance.SaveOrUpdateList(new List<ValidationConstraint>{firstConstraint, secondConstraint, thirdConstraint});
+            ValidationConstraintService.Instance.ValidateObject(asset);
+        }
         [TestMethod]
         public void ValidationConstraints_SaveSomeConstraints()
         {
@@ -703,19 +741,25 @@ namespace Test
         private static void TrySaveAndFail(IList<ValidationConstraint> constraintsList)
         {
             //var transac = SessionManagement.Db.StartTransaction();
+            bool hasFailed = false;
             try
             {
                 ValidationConstraintService.Instance.SaveOrUpdateList(constraintsList);
-                Assert.Fail("The constraint could be saved, but should not!");
             }
             catch (Exception e)
             {
-                Assert.IsNotNull(e);
+                hasFailed = true;
             }
             finally
             {
-                //SessionManagement.Db.RollbackTrans(transac);
+                Assert.IsTrue(hasFailed);
             }
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            SessionManagement.Db.ClearAllConstraints();
         }
     }
 }

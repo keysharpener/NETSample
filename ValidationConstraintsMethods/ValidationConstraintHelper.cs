@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ValidationConstraintsMethods.FakeDB;
 using ValidationConstraintsMethods.Parsers;
 using ValidationConstraintsObjectModel.Constants;
 using ValidationConstraintsObjectModel.Entities;
@@ -11,15 +12,16 @@ namespace ValidationConstraintsMethods
 {
     public static class ValidationConstraintHelper
     {
-        public static bool ProcessConstraints(object item, IList<ValidationConstraint> constraints, out string finalMessage)
+        public static void ProcessConstraints(object item, IList<ValidationConstraint> constraints, out string finalMessage)
         {
             StringBuilder sb = new StringBuilder();
             var absoluteParents = constraints.Where(c => c.ParentConstraint == null).ToList();
             foreach (var validationConstraint in absoluteParents)
             {
                 string message = null;
-                if (constraints.Any(c => c.ParentConstraint == validationConstraint))
-                    RecursiveProcess(item, constraints, validationConstraint, out message);
+                var childConstraints = constraints.Where(c => c.ParentConstraint == validationConstraint).ToList();
+                if (childConstraints.Any())
+                    ProcessChildrenConstraints(item, childConstraints, validationConstraint, out message);
                 else
                 {
                     var respected = ProcessConstraint(item, validationConstraint);
@@ -28,27 +30,26 @@ namespace ValidationConstraintsMethods
                 if (!string.IsNullOrEmpty(message)) sb.AppendLine(message);
             }
             finalMessage = sb.ToString();
-            return string.IsNullOrEmpty(finalMessage);
         }
 
-        private static void RecursiveProcess(object item, IList<ValidationConstraint> constraints, ValidationConstraint parentConstraint, out string message)
+        private static void ProcessChildrenConstraints(object item, IList<ValidationConstraint> constraints, ValidationConstraint parentConstraint, out string message)
         {
             StringBuilder sb = new StringBuilder();
             message = null;
             var parentConstraintIsRespected = ProcessConstraint(item, parentConstraint);
             if (!parentConstraintIsRespected) return;
-            foreach (var source in constraints.Where(c => Equals(c.ParentConstraint, parentConstraint)))
+            foreach (var source in constraints)
             {
                 var constraintIsRespected = ProcessConstraint(item, source);
-                var constraintHasChildren = constraints.Any(c => Equals(c.ParentConstraint, source));
-                if (constraintIsRespected && constraintHasChildren)
+                var childConstraints = SessionManagement.Db.GetAllValidationConstraints().Where(c => c.ParentConstraint == source).ToList();
+                if (constraintIsRespected && childConstraints.Any())
                 {
                     //Go down the tree
-                    string subMessage = null;
-                    RecursiveProcess(item, constraints, source, out subMessage);
+                    string subMessage;
+                    ProcessChildrenConstraints(item, childConstraints, source, out subMessage);
                     if (!string.IsNullOrEmpty(subMessage)) sb.AppendLine(subMessage);
                 }
-                else if (!constraintIsRespected && !constraintHasChildren)
+                else if (!constraintIsRespected && !childConstraints.Any())
                 {
                     //if all parents are true and the final child is false, the constraint is not respected.
                     sb.AppendLine(string.Format("{0} is not respected", source));

@@ -40,5 +40,15 @@ namespace ValidationConstraintsObjectModel.Entities
             }
             return string.Format("{0} {1}", Property, ConstraintType);
         }
+
+        // override object.Equals
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+            return (ToString() == obj.ToString());
+        }
     }
 }

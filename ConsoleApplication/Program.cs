@@ -32,7 +32,7 @@ namespace ConsoleApplication
         {
             var sampleStatus = new AssetStatus { Code = "TRAD", Id = 2356, Name = "Tradeable", RequiresDeletion = false };
             var sampleType = new AssetType {Code = "B", Name = "Bond"};
-            return new AssetEditable { Id = 1, AssetStatus = sampleStatus, AssetType = sampleType, HandlesQuotes = true, Name = "Octo Asset", Code = "OCT"};
+            return new AssetEditable { Id = 1, Status = sampleStatus, AssetType = sampleType, HandlingQuotes = true, Name = "Octo Asset", Code = "OCT"};
         }
     }
 }
