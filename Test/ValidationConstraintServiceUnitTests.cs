@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Nexfi.Tracker.Common.ObjectModel.Entities.ValidationConstraints;
-using Nexfi.Tracker.Server.Services.Core;
 using ValidationConstraintsMethods;
+using ValidationConstraintsMethods.FakeDB;
+using ValidationConstraintsMethods.Parsers;
+using ValidationConstraintsMethods.WCFService;
+using ValidationConstraintsObjectModel.Constants;
 using ValidationConstraintsObjectModel.Entities;
 
-namespace Nexfi.Tracker.Server.Services.Test
+namespace Test
 {
     [TestClass]
     public class ValidationConstraintServiceUnitTests

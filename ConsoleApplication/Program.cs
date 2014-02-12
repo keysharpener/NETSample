@@ -1,39 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ValidationConstraintsObjectModel;
+using ValidationConstraintsMethods.FakeDB;
+using ValidationConstraintsMethods.Parsers;
+using ValidationConstraintsMethods.WCFService;
+using ValidationConstraintsObjectModel.Constants;
 using ValidationConstraintsObjectModel.Entities;
-using ValidationConstraintsMethods;
-using Nexfi.Tracker.Common.ObjectModel.Entities.ValidationConstraints;
-using Nexfi.Tracker.Server.Services.Core;
+
 namespace ConsoleApplication
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
-            var asset = new AssetEditable();
+            AssetEditable asset = GenerateSampleAsset();
+
             var enumerator = new ExpressionEnumerator(typeof(AssetEditable)).ToList();
-            Console.WriteLine(string.Format("Type of {0} : ", typeof(AssetEditable).AssemblyQualifiedName));
+            var evaluator = new ExpressionEvaluator();
+
+            Console.WriteLine("Type of {0} : ", typeof(AssetEditable).AssemblyQualifiedName);
             foreach (KeyValuePair<string,string> k in enumerator)
             {
-                Console.WriteLine(string.Format("Property name : {0}", k.Key));
+                Console.WriteLine("Property name : {0}", k.Key);
+                Console.WriteLine("Value : {0}", evaluator.GetValue(asset, k.Key));
                 Console.WriteLine();
-
             }
-            //Set the asset's properties to default values
-            asset.Name = "test";
-            asset.Code = "t.PA";
-            var nameConstraint = new ValidationConstraint { ObjectType = typeof(AssetEditable).AssemblyQualifiedName, Property = "Name", PropertyType = typeof(string).AssemblyQualifiedName, ConstraintType = trkValidationConstraintType.NotNull };
-            nameConstraint = SessionManagement.Db.SaveOrUpdateInstance(nameConstraint);
-            Console.WriteLine(string.Format("{0} was saved succesfully"));
-            ValidationConstraintService.Instance.ValidateObject(asset);
-            nameConstraint = new ValidationConstraint { ObjectType = typeof(AssetEditable).AssemblyQualifiedName, Property = "Code", PropertyType = typeof(string).AssemblyQualifiedName, ConstraintType = trkValidationConstraintType.Null };
-            nameConstraint = SessionManagement.Db.SaveOrUpdateInstance(nameConstraint);
-            ValidationConstraintService.Instance.ValidateObject(asset);
             Console.ReadLine();
+        }
+
+        private static AssetEditable GenerateSampleAsset()
+        {
+            var sampleStatus = new AssetStatus { Code = "TRAD", Id = 2356, Name = "Tradeable", RequiresDeletion = false };
+            var sampleType = new AssetType {Code = "B", Name = "Bond"};
+            return new AssetEditable { Id = 1, AssetStatus = sampleStatus, AssetType = sampleType, HandlesQuotes = true, Name = "Octo Asset", Code = "OCT"};
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using ValidationConstraintsObjectModel.Constants;
 
-namespace Nexfi.Tracker.Common.ObjectModel.Entities.ValidationConstraints
+namespace ValidationConstraintsObjectModel.Entities
 {
     [Serializable]
     public class ValidationConstraint : ObjectBase

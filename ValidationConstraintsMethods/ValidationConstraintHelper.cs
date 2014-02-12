@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using ValidationConstraintsMethods.Parsers;
+using ValidationConstraintsObjectModel.Constants;
+using ValidationConstraintsObjectModel.Entities;
 
-namespace Nexfi.Tracker.Common.ObjectModel.Entities.ValidationConstraints
+namespace ValidationConstraintsMethods
 {
     public static class ValidationConstraintHelper
     {

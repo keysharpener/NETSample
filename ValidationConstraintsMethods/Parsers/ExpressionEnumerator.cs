@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Nexfi.Tracker.Common.ObjectModel.Entities.ValidationConstraints
+namespace ValidationConstraintsMethods.Parsers
 {
     public class ExpressionEnumerator : IEnumerable<KeyValuePair<string, string>>
     {

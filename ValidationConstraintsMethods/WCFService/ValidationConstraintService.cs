@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Nexfi.Tracker.Common.ObjectModel.Entities.ValidationConstraints;
-using ValidationConstraintsMethods;
+using ValidationConstraintsMethods.FakeDB;
+using ValidationConstraintsObjectModel.Constants;
 using ValidationConstraintsObjectModel.Contracts;
+using ValidationConstraintsObjectModel.Entities;
 
-namespace Nexfi.Tracker.Server.Services.Core
+namespace ValidationConstraintsMethods.WCFService
 {
     public class ValidationConstraintService 
     {

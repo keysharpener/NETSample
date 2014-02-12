@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace Nexfi.Tracker.Common.ObjectModel.Entities.ValidationConstraints
+namespace ValidationConstraintsObjectModel.Constants
 {
     [DataContract]
     public enum trkValidationConstraintType
